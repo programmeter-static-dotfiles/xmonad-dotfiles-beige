@@ -1,0 +1,64 @@
+Config { 
+
+   -- appearance
+     font = "Ubuntu Bold 12"
+   , additionalFonts = [ "JetBrains Mono Nerd Font" ]
+   , bgColor =      "#121212"
+   , fgColor =      "#212121"
+   , position =     TopH 28
+
+   -- layout
+   , sepChar =  "&"   -- delineator between plugin names and straight text
+   , alignSep = "}{"  -- separator between left-right alignment
+   , template = "  &XMonadLog& } [  &date&  ] { [  <box type=Bottom width=3 color=#afa193>&kbd& / <action=`pactl set-sink-volume @DEFAULT_SINK@ +5%` button=4><action=`pactl set-sink-volume @DEFAULT_SINK@ -5%` button=5><fc=#afa193>󰕾</fc><fc=#cacaca>  &volume&</fc></action></action> / &multicpu& / &memory& / &disku& / </box><box type=Bottom width=3 color=#7e2b1a><fc=#afa193> </fc><fc=#cacaca>&updates&</fc> </box><box type=Bottom width=3 color=#35465A>/ &autolock&   &vpn&   &connection&  </box>  ]  <action=`/home/defaultuser/.scripts/power_menu.sh` button=1><box type=Bottom width=3 color=#afa193>[ <fc=#afa193>  </fc>  ]</box></action>  "
+
+   -- general behavior
+   , lowerOnStart =     True    -- send to bottom of window stack on start
+   , hideOnStart =      False   -- start with window unmapped (hidden)
+   , allDesktops =      True    -- show on all desktops
+   , overrideRedirect = True    -- set the Override Redirect flag (Xlib)
+   , pickBroadest =     False   -- choose widest display (multi-monitor)
+   , persistent =       True    -- enable/disable hiding (True = disabled)
+
+   -- plugins
+   --   Numbers can be automatically colored according to their value. xmobar
+   --   decides color based on a three-tier/two-cutoff system, controlled by
+   --   command options:
+   --     --Low sets the low cutoff
+   --     --High sets the high cutoff
+   --
+   --     --low sets the color below --Low cutoff
+   --     --normal sets the color between --Low and --High cutoffs
+   --     --High sets the color above --High cutoff
+   --
+   --   The --template option controls how the plugin is displayed. Text
+   --   color can be set by enclosing in <fc></fc> tags. For more details
+   --   see http://projects.haskell.org/xmobar/#system-monitor-plugins.
+   , commands =  
+        -- cpu activity monitor
+         [ Run MultiCpu [ "--template" , "<fc=#afa193></fc><fc=#cacaca>  <total>%</fc>" ] 30
+	
+        -- memory usage monitor
+        , Run Memory         [ "--template" ,"<fc=#afa193></fc><fc=#cacaca>  <used>M</fc>" ] 30
+
+	, Run DiskU [("/", "<fc=#afa193></fc><fc=#cacaca>  <free></fc>")] [] 2400
+
+        -- time and date indicator 
+        --   (%F = y-m-d date, %a = day of week, %T = h:m:s time)
+        , Run Date           "<box type=Bottom color=#afa193 width=3><fc=#ffffff>  %H:%M %a %b %d, %Y</fc></box>" "date" 10
+	
+	, Run Com "/home/defaultuser/.scripts/volume_level.sh" [] "volume" 5
+	, Run Com "/home/defaultuser/.scripts/check_update.sh" [] "updates" 18000 
+	, Run Com "/home/defaultuser/.scripts/autolock_status.sh" [] "autolock" 10
+	, Run Com "/home/defaultuser/.scripts/vpn_indicator.sh" [] "vpn" 50
+	-- For some reason this doesn't work without passing the script to bash
+	, Run Com "/bin/bash" ["-c", "/home/defaultuser/.scripts/check_connection.sh"] "connection" 50
+
+        -- keyboard layout indicator
+        , Run Kbd            [ ("us" , "<fc=#afa193></fc><fc=#cacaca>   US</fc>")
+                             , ("rs(latinyz)", "<fc=#afa193></fc><fc=#cacaca>   RS (Latin)</fc>")
+                             , ("rs", "<fc=#afa193></fc><fc=#cacaca>   RS</fc>")
+                             ]
+	, Run XMonadLog
+	]
+   }
